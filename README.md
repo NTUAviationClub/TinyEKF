@@ -1,5 +1,5 @@
-# TinyEKF
-EKF for Arduino with 6/9 axis IMU
+# Altitude Control
+Simple Attitude Control Program for Arduino
 ## License
 MIT License
 
