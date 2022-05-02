@@ -1,8 +1,10 @@
 # TinyEKF
-EKF for Arduino with 6/9 axis IMU
+EKF for Arduino with 6/9 axis IMU. The main purpose is to estimate the gyro bias.
 
 ## Usage
-Please see ./example
+Please see ./example. The example is used with MPU6050 with I2C
+### Caution
+- On UNO, it is recommended to use c API (ekf7.h, quaternion_6/9axis.h) to save memory.  Also, ekf.h is too big for UNO.
 
 ## State Space Equation
 ### ekf(10)
