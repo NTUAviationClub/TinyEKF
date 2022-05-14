@@ -29,10 +29,9 @@ void pid_update(DTYPE now, DTYPE setpoint, FT *ctl, int isqueue, FT *dlpf) {
     ctl->param[PID_SIdt] -= ctl->last_output[(ctl->last_pos + 1) % ctl->size];
   } else if (isqueue == PID_NOT_QUEUE) {
     if (Dabs(ctl->param[PID_SIdt]) > ctl->param[PID_Ilimit] * dt) {
-      if(ctl->param[PID_SIdt]>0){
+      if (ctl->param[PID_SIdt] > 0) {
         ctl->param[PID_SIdt] = ctl->param[PID_Ilimit] * dt;
-      }
-      else if(ctl->param[PID_SIdt]<=0){
+      } else if (ctl->param[PID_SIdt] <= 0) {
         ctl->param[PID_SIdt] = -ctl->param[PID_Ilimit] * dt;
       }
     }
@@ -59,7 +58,7 @@ void pid_update(DTYPE now, DTYPE setpoint, FT *ctl, int isqueue, FT *dlpf) {
   // printf("p: %lf, i: %lf, d: %lf\r\n", _p, _i, _d);
 }
 
-void get_last_pid(DTYPE *p, DTYPE *i, DTYPE *d){
+void get_last_pid(DTYPE *p, DTYPE *i, DTYPE *d) {
   *p = last_p_;
   *i = last_i_;
   *d = last_d_;
