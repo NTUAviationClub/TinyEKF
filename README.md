@@ -1,5 +1,31 @@
 # TinyEKF
+<<<<<<< HEAD
 EKF for Arduino with 6/9 axis IMU
+=======
+EKF for Arduino with 6/9 axis IMU. The main purpose is to estimate the gyro bias.
+
+## Usage
+Please see ./example. The example is used with MPU6050 with I2C
+### Caution
+- On UNO, it is recommended to use c API (ekf7.h, quaternion_6/9axis.h) to save memory.  Also, ekf.h is too big for UNO.
+
+## State Space Equation
+### ekf(10)
+#### Transition Model
+![equation](https://latex.codecogs.com/svg.image?\begin{bmatrix}&space;\omega_x\\&space;\omega_y\\&space;\omega_z\\&space;b_x\\&space;b_y\\&space;b_z\\&space;q_w\\&space;q_x\\&space;q_y\\&space;q_z\end{bmatrix}_{k&plus;1}&space;=&space;I_{10*10}&space;&plus;&space;\Delta&space;T&space;\begin{bmatrix}&space;0\\&space;0\\&space;0\\&space;0\\&space;0\\&space;0\\&space;0.5(-q_x\omega_x-q_y\omega_y-q_z\omega_z)\\&space;0.5(q_w\omega_x-q_y\omega_z&plus;q_z\omega_y)\\&space;0.5(q_w\omega_y&plus;q_x\omega_z-q_z\omega_x)\\&space;0.5(q_w\omega_z-q_x\omega_y&plus;q_y\omega_x)\end{bmatrix})
+#### Observation Model
+![equation](https://latex.codecogs.com/svg.image?y=\begin{bmatrix}&space;\omega_x\\&space;\omega_y\\&space;\omega_z\\&space;q_w\\&space;q_x\\&space;q_y\\&space;q_z\end{bmatrix})
+
+### ekf7
+#### Transition Model
+![equation](https://latex.codecogs.com/svg.image?\begin{bmatrix}&space;b_x\\&space;b_y\\&space;b_z\\&space;q_w\\&space;q_x\\&space;q_y\\&space;q_z\end{bmatrix}_{k&plus;1}&space;=&space;I_{10*10}&space;&plus;&space;\Delta&space;T&space;\begin{bmatrix}&space;0\\&space;0\\&space;0\\&space;0.5(-q_x(\omega_x-b_x)-q_y(\omega_y-b_y)-q_z(\omega_z-b_z))\\&space;0.5(q_w(\omega_x-b_x)-q_y(\omega_z-b_z)&plus;q_z(\omega_y-b_y))\\&space;0.5(q_w(\omega_y-b_y)&plus;q_x(\omega_z-b_z)-q_z(\omega_x-b_x))\\&space;0.5(q_w(\omega_z-b_z)-q_x(\omega_y-b_y)&plus;q_y(\omega_x-b_x))\end{bmatrix})
+#### Observation Model
+![equation](https://latex.codecogs.com/svg.image?y=\begin{bmatrix}&space;q_w\\&space;q_x\\&space;q_y\\&space;q_z\end{bmatrix})
+
+## References
+[1] "An Extended Kalman Filter for Quaternion-Based Orientation Estimation Using MARG Sensors", JoZo Luis Marins et.el., 2001
+
+>>>>>>> c77e5e6fbb5deb0669991350cab7bd1b20ed9f6b
 ## License
 MIT License
 
