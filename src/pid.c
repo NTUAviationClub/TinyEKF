@@ -1,5 +1,9 @@
 #include "pid.h"
 
+DTYPE last_p_ = 0, last_i_ = 0, last_d_ = 0;
+
+DTYPE Dabs(DTYPE r) { return (r > 0 ? r : (-r)); }
+
 void pid_update(DTYPE now, DTYPE setpoint, FT *ctl, int isqueue, FT *dlpf) {
   DTYPE _p = 0, _i = 0, _d = 0, _e = 0, _dot = 0;
   DTYPE dt = now - ctl->last_time;
@@ -24,8 +28,13 @@ void pid_update(DTYPE now, DTYPE setpoint, FT *ctl, int isqueue, FT *dlpf) {
   if (isqueue == PID_USE_QUEUE) {
     ctl->param[PID_SIdt] -= ctl->last_output[(ctl->last_pos + 1) % ctl->size];
   } else if (isqueue == PID_NOT_QUEUE) {
-    if (ctl->param[PID_SIdt] > ctl->param[PID_Ilimit] * dt) {
-      ctl->param[PID_SIdt] = ctl->param[PID_Ilimit] * dt;
+    if (Dabs(ctl->param[PID_SIdt]) > ctl->param[PID_Ilimit] * dt) {
+      if(ctl->param[PID_SIdt]>0){
+        ctl->param[PID_SIdt] = ctl->param[PID_Ilimit] * dt;
+      }
+      else if(ctl->param[PID_SIdt]<=0){
+        ctl->param[PID_SIdt] = -ctl->param[PID_Ilimit] * dt;
+      }
     }
   }
   // Then we can update last_pose,
@@ -41,7 +50,17 @@ void pid_update(DTYPE now, DTYPE setpoint, FT *ctl, int isqueue, FT *dlpf) {
   _p = ctl->param[PID_KP] * _e;
   _i = ctl->param[PID_KI] * ctl->param[PID_SIdt];
   _d = ctl->param[PID_KD] * _dot;
+  // record the last value
+  last_p_ = _p;
+  last_i_ = _i;
+  last_d_ = _d;
   ctl->current_output = _p + _i + _d;
   ctl->last_time = now;
   // printf("p: %lf, i: %lf, d: %lf\r\n", _p, _i, _d);
+}
+
+void get_last_pid(DTYPE *p, DTYPE *i, DTYPE *d){
+  *p = last_p_;
+  *i = last_i_;
+  *d = last_d_;
 }

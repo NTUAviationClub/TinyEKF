@@ -21,6 +21,8 @@ extern "C" {
 
 void pid_update(DTYPE now, DTYPE setpoint, FT *ctl, int isqueue, FT *dlpf);
 
+void get_last_pid(DTYPE *p, DTYPE *i, DTYPE *d);
+
 #ifdef __cplusplus
 }
 #endif
