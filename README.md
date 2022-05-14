@@ -1,7 +1,4 @@
 # TinyEKF
-<<<<<<< HEAD
-EKF for Arduino with 6/9 axis IMU
-=======
 EKF for Arduino with 6/9 axis IMU. The main purpose is to estimate the gyro bias.
 
 ## Usage
@@ -25,7 +22,6 @@ Please see ./example. The example is used with MPU6050 with I2C
 ## References
 [1] "An Extended Kalman Filter for Quaternion-Based Orientation Estimation Using MARG Sensors", JoZo Luis Marins et.el., 2001
 
->>>>>>> c77e5e6fbb5deb0669991350cab7bd1b20ed9f6b
 ## License
 MIT License
 
