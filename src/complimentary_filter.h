@@ -1,6 +1,10 @@
 #ifndef COM_FILTER_H__
 #define COM_FILTER_H__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "quaternion.h"
 #include "stdio.h"
 
@@ -30,5 +34,9 @@ void cf_get_bias(DTYPE *bx, DTYPE *by, DTYPE *bz);
 // function.
 void cf_update_ui(DTYPE _now, FT *_cf, Qtn *_q_acc, DTYPE _wx, DTYPE _wy,
                   DTYPE _wz);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
