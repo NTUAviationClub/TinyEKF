@@ -74,14 +74,63 @@ void inv(Qtn *q, Qtn *res) {
   res->z = -q->z;
 }
 
+// Ref: http://codewee.com/view.php?idx=42
+void slerp(Qtn *q1, Qtn *q2, Qtn *q3, DTYPE t) {
+  float t_ = 1 - t;
+  DTYPE Wq1, Wq2;
+  DTYPE theta =
+      acos(q1->x * q2->x + q1->y * q2->y + q1->z * q2->z + q1->w * q2->w);
+  DTYPE sn = sin(theta);
+  Wq1 = sin(t_ * theta) / sn;
+  Wq2 = sin(t * theta) / sn;
+  q3->x = Wq1 * q1->x + Wq2 * q2->x;
+  q3->y = Wq1 * q1->y + Wq2 * q2->y;
+  q3->z = Wq1 * q1->z + Wq2 * q2->z;
+  q3->w = Wq1 * q1->w + Wq2 * q2->w;
+  normalize_inplace(q3);
+}
+
+// From Wikipedia LOL
+float inverse_squareroot(float x) {
+  long i;
+  float x2, y;
+  const float threehalfs = 1.5F;
+
+  x2 = x * 0.5F;
+  y = x;
+  i = *(long *)&y;           // evil floating point bit level hacking
+  i = 0x5f3759df - (i >> 1); // what the fuck?
+  y = *(float *)&i;
+  y = y * (threehalfs - (x2 * y * y)); // 1st iteration
+  // y  = y * ( threehalfs - ( x2 * y * y ) );
+  // 2nd iteration, this can be removed
+
+  return y;
+}
+
 DTYPE norm_2(Qtn *q) {
   return sqrt(pow(q->w, 2) + pow(q->x, 2) + pow(q->y, 2) + pow(q->z, 2));
 }
 
+DTYPE inverse_norm_2(Qtn *q) {
+  return inverse_squareroot(pow(q->w, 2) + pow(q->x, 2) + pow(q->y, 2) +
+                            pow(q->z, 2));
+}
+
 void normalize(Qtn *q, Qtn *res) {
-  DTYPE norm = norm_2(q);
-  res->w = q->w / norm;
-  res->x = q->x / norm;
-  res->y = q->y / norm;
-  res->z = q->z / norm;
+  // DTYPE norm = norm_2(q);
+  DTYPE inorm = inverse_norm_2(q);
+  res->w = q->w * inorm;
+  res->x = q->x * inorm;
+  res->y = q->y * inorm;
+  res->z = q->z * inorm;
+}
+
+void normalize_inplace(Qtn *q) {
+  // DTYPE norm = norm_2(q);
+  DTYPE inorm = inverse_norm_2(q);
+  q->w = q->w * inorm;
+  q->x = q->x * inorm;
+  q->y = q->y * inorm;
+  q->z = q->z * inorm;
 }
