@@ -8,12 +8,6 @@
 
 #include "quaternion_9axis.h"
 
-// Important types used here.
-typedef struct matrix {
-  byte dim; // dimision of the matrix, dim = m<<4 + n
-  byte sps; // start position in thqe9_e_space
-} M;
-
 // Definition of important constant.
 // Should NOT be modified.
 #define SPACE_SIZE 55 // maximum matrix element number
@@ -31,10 +25,10 @@ typedef struct matrix {
 // The (x, y)th element for NOT symmetric matrix of m rows * n columns, starting
 // with (0, 0). With O2 Opt., the add/mul. part in the index should be replaced
 // by const. (Hopefully?)
-#define MAT(mat, x, y) qe9_spacqe9_e_[mat.sps + y + x * (mat.dim & 0x0f)]
+#define MAT(mat, x, y) qe9_space_[mat.sps + y + x * (mat.dim & 0x0f)]
 // Get the (x, y)th element of a symmetric matrix.
 #define SYM(mat, x, y)                                                         \
-  qe9_spacqe9_e_[mat.sps + imax(x, y) + imin(x, y) * (mat.dim & 0x0f) -            \
+  qe9_space_[mat.sps + imax(x, y) + imin(x, y) * (mat.dim & 0x0f) -            \
              (imin(x, y) * imin(x, y) + imin(x, y)) / 2]
 // Get how much a NOT symmetric matrix take to store data
 #define OCU(mat) (mat.dim >> 4) * (mat.dim & 0x0f)
@@ -43,7 +37,7 @@ typedef struct matrix {
   0.5 * ((mat.dim >> 4) * ((mat.dim & 0x0f) - 1)) + (mat.dim >> 4)
 
 // Every element of matrix in the quaternion estimator will be stored here.
-FTYPE qe9_spacqe9_e_[SPACE_SIZE];
+FTYPE qe9_space_[SPACE_SIZE];
 byte qe9_spscnt_;
 
 // Matrix used for Quaternion estimation
@@ -58,8 +52,8 @@ FTYPE qe9_bax_, qe9_bay_, qe9_baz_, qe9_bmx_, qe9_bmy_, qe9_bmz_;
 // Quaternion Estimation
 FTYPE qe9_qw_, qe9_qx_, qe9_qy_, qe9_qz_;
 
-void set_reference(FTYPE eax, FTYPE eay, FTYPE eaz, FTYPE emx, FTYPE emy,
-                   FTYPE emz) {
+void qe9_set_reference(FTYPE eax, FTYPE eay, FTYPE eaz, FTYPE emx, FTYPE emy,
+                       FTYPE emz) {
   qe9_eax_ = eax;
   qe9_eay_ = eay;
   qe9_eaz_ = eaz;
@@ -68,8 +62,8 @@ void set_reference(FTYPE eax, FTYPE eay, FTYPE eaz, FTYPE emx, FTYPE emy,
   qe9_emz_ = emz;
 }
 
-void set_measurement(FTYPE bax, FTYPE bay, FTYPE baz, FTYPE bmx, FTYPE bmy,
-                     FTYPE bmz) {
+void qe9_set_measurement(FTYPE bax, FTYPE bay, FTYPE baz, FTYPE bmx, FTYPE bmy,
+                         FTYPE bmz) {
   qe9_bax_ = bax;
   qe9_bay_ = bay;
   qe9_baz_ = baz;
@@ -78,10 +72,10 @@ void set_measurement(FTYPE bax, FTYPE bay, FTYPE baz, FTYPE bmx, FTYPE bmy,
   qe9_bmz_ = bmz;
 }
 
-void quaternion_init(void) {
+void qe9_quaternion_init(void) {
   // Fill all elements with 0
   for (int i = 0; i < SPACE_SIZE; i++) {
-    qe9_spacqe9_e_[i] = 0;
+    qe9_space_[i] = 0;
   }
   // Initialize all structures.
   // Jacobian, non sysmmetric 6*4
@@ -108,35 +102,59 @@ void quaternion_init(void) {
   qe9_qz_ = 0;
 }
 
-void set_J(void) {
+void qe9_set_J(void) {
   // Set J by reference vectors and quaternions
-  MAT(qe9_J_, 0, 0) = -2 * (qe9_qw_ * qe9_bmx_ - qe9_qz_ * qe9_bmy_ + qe9_qy_ * qe9_bmz_);
-  MAT(qe9_J_, 1, 0) = -2 * (qe9_qz_ * qe9_bmx_ + qe9_qw_ * qe9_bmy_ - qe9_qx_ * qe9_bmz_);
-  MAT(qe9_J_, 2, 0) = -2 * (-qe9_qy_ * qe9_bmx_ + qe9_qx_ * qe9_bmy_ + qe9_qw_ * qe9_bmz_);
-  MAT(qe9_J_, 3, 0) = -2 * (qe9_qw_ * qe9_bax_ - qe9_qz_ * qe9_bay_ + qe9_qy_ * qe9_baz_);
-  MAT(qe9_J_, 4, 0) = -2 * (qe9_qz_ * qe9_bax_ + qe9_qw_ * qe9_bay_ - qe9_qx_ * qe9_baz_);
-  MAT(qe9_J_, 5, 0) = -2 * (-qe9_qy_ * qe9_bax_ + qe9_qx_ * qe9_bay_ + qe9_qw_ * qe9_baz_);
+  MAT(qe9_J_, 0, 0) =
+      -2 * (qe9_qw_ * qe9_bmx_ - qe9_qz_ * qe9_bmy_ + qe9_qy_ * qe9_bmz_);
+  MAT(qe9_J_, 1, 0) =
+      -2 * (qe9_qz_ * qe9_bmx_ + qe9_qw_ * qe9_bmy_ - qe9_qx_ * qe9_bmz_);
+  MAT(qe9_J_, 2, 0) =
+      -2 * (-qe9_qy_ * qe9_bmx_ + qe9_qx_ * qe9_bmy_ + qe9_qw_ * qe9_bmz_);
+  MAT(qe9_J_, 3, 0) =
+      -2 * (qe9_qw_ * qe9_bax_ - qe9_qz_ * qe9_bay_ + qe9_qy_ * qe9_baz_);
+  MAT(qe9_J_, 4, 0) =
+      -2 * (qe9_qz_ * qe9_bax_ + qe9_qw_ * qe9_bay_ - qe9_qx_ * qe9_baz_);
+  MAT(qe9_J_, 5, 0) =
+      -2 * (-qe9_qy_ * qe9_bax_ + qe9_qx_ * qe9_bay_ + qe9_qw_ * qe9_baz_);
 
-  MAT(qe9_J_, 0, 1) = -2 * (qe9_qx_ * qe9_bmx_ + qe9_qy_ * qe9_bmy_ + qe9_qz_ * qe9_bmz_);
-  MAT(qe9_J_, 1, 1) = -2 * (qe9_qy_ * qe9_bmx_ - qe9_qx_ * qe9_bmy_ - qe9_qw_ * qe9_bmz_);
-  MAT(qe9_J_, 2, 1) = -2 * (qe9_qz_ * qe9_bmx_ + qe9_qw_ * qe9_bmy_ - qe9_qx_ * qe9_bmz_);
-  MAT(qe9_J_, 3, 1) = -2 * (qe9_qx_ * qe9_bax_ + qe9_qy_ * qe9_bay_ + qe9_qz_ * qe9_baz_);
-  MAT(qe9_J_, 4, 1) = -2 * (qe9_qy_ * qe9_bax_ - qe9_qx_ * qe9_bay_ - qe9_qw_ * qe9_baz_);
-  MAT(qe9_J_, 5, 1) = -2 * (qe9_qz_ * qe9_bax_ + qe9_qw_ * qe9_bay_ - qe9_qx_ * qe9_baz_);
+  MAT(qe9_J_, 0, 1) =
+      -2 * (qe9_qx_ * qe9_bmx_ + qe9_qy_ * qe9_bmy_ + qe9_qz_ * qe9_bmz_);
+  MAT(qe9_J_, 1, 1) =
+      -2 * (qe9_qy_ * qe9_bmx_ - qe9_qx_ * qe9_bmy_ - qe9_qw_ * qe9_bmz_);
+  MAT(qe9_J_, 2, 1) =
+      -2 * (qe9_qz_ * qe9_bmx_ + qe9_qw_ * qe9_bmy_ - qe9_qx_ * qe9_bmz_);
+  MAT(qe9_J_, 3, 1) =
+      -2 * (qe9_qx_ * qe9_bax_ + qe9_qy_ * qe9_bay_ + qe9_qz_ * qe9_baz_);
+  MAT(qe9_J_, 4, 1) =
+      -2 * (qe9_qy_ * qe9_bax_ - qe9_qx_ * qe9_bay_ - qe9_qw_ * qe9_baz_);
+  MAT(qe9_J_, 5, 1) =
+      -2 * (qe9_qz_ * qe9_bax_ + qe9_qw_ * qe9_bay_ - qe9_qx_ * qe9_baz_);
 
-  MAT(qe9_J_, 0, 2) = -2 * (-qe9_qy_ * qe9_bmx_ + qe9_qx_ * qe9_bmy_ + qe9_qw_ * qe9_bmz_);
-  MAT(qe9_J_, 1, 2) = -2 * (qe9_qx_ * qe9_bmx_ + qe9_qy_ * qe9_bmy_ + qe9_qz_ * qe9_bmz_);
-  MAT(qe9_J_, 2, 2) = -2 * (-qe9_qw_ * qe9_bmx_ + qe9_qz_ * qe9_bmy_ - qe9_qy_ * qe9_bmz_);
-  MAT(qe9_J_, 3, 2) = -2 * (-qe9_qy_ * qe9_bax_ + qe9_qx_ * qe9_bay_ + qe9_qw_ * qe9_baz_);
-  MAT(qe9_J_, 4, 2) = -2 * (qe9_qx_ * qe9_bax_ + qe9_qy_ * qe9_bay_ + qe9_qz_ * qe9_baz_);
-  MAT(qe9_J_, 5, 2) = -2 * (-qe9_qw_ * qe9_bax_ + qe9_qz_ * qe9_bay_ - qe9_qy_ * qe9_baz_);
+  MAT(qe9_J_, 0, 2) =
+      -2 * (-qe9_qy_ * qe9_bmx_ + qe9_qx_ * qe9_bmy_ + qe9_qw_ * qe9_bmz_);
+  MAT(qe9_J_, 1, 2) =
+      -2 * (qe9_qx_ * qe9_bmx_ + qe9_qy_ * qe9_bmy_ + qe9_qz_ * qe9_bmz_);
+  MAT(qe9_J_, 2, 2) =
+      -2 * (-qe9_qw_ * qe9_bmx_ + qe9_qz_ * qe9_bmy_ - qe9_qy_ * qe9_bmz_);
+  MAT(qe9_J_, 3, 2) =
+      -2 * (-qe9_qy_ * qe9_bax_ + qe9_qx_ * qe9_bay_ + qe9_qw_ * qe9_baz_);
+  MAT(qe9_J_, 4, 2) =
+      -2 * (qe9_qx_ * qe9_bax_ + qe9_qy_ * qe9_bay_ + qe9_qz_ * qe9_baz_);
+  MAT(qe9_J_, 5, 2) =
+      -2 * (-qe9_qw_ * qe9_bax_ + qe9_qz_ * qe9_bay_ - qe9_qy_ * qe9_baz_);
 
-  MAT(qe9_J_, 0, 3) = -2 * (-qe9_qz_ * qe9_bmx_ - qe9_qw_ * qe9_bmy_ + qe9_qx_ * qe9_bmz_);
-  MAT(qe9_J_, 1, 3) = -2 * (qe9_qw_ * qe9_bmx_ - qe9_qz_ * qe9_bmy_ + qe9_qy_ * qe9_bmz_);
-  MAT(qe9_J_, 2, 3) = -2 * (qe9_qx_ * qe9_bmx_ + qe9_qy_ * qe9_bmy_ + qe9_qz_ * qe9_bmz_);
-  MAT(qe9_J_, 3, 3) = -2 * (-qe9_qz_ * qe9_bax_ - qe9_qw_ * qe9_bay_ + qe9_qx_ * qe9_baz_);
-  MAT(qe9_J_, 4, 3) = -2 * (qe9_qw_ * qe9_bax_ - qe9_qz_ * qe9_bay_ + qe9_qy_ * qe9_baz_);
-  MAT(qe9_J_, 5, 3) = -2 * (qe9_qx_ * qe9_bax_ + qe9_qy_ * qe9_bay_ + qe9_qz_ * qe9_baz_);
+  MAT(qe9_J_, 0, 3) =
+      -2 * (-qe9_qz_ * qe9_bmx_ - qe9_qw_ * qe9_bmy_ + qe9_qx_ * qe9_bmz_);
+  MAT(qe9_J_, 1, 3) =
+      -2 * (qe9_qw_ * qe9_bmx_ - qe9_qz_ * qe9_bmy_ + qe9_qy_ * qe9_bmz_);
+  MAT(qe9_J_, 2, 3) =
+      -2 * (qe9_qx_ * qe9_bmx_ + qe9_qy_ * qe9_bmy_ + qe9_qz_ * qe9_bmz_);
+  MAT(qe9_J_, 3, 3) =
+      -2 * (-qe9_qz_ * qe9_bax_ - qe9_qw_ * qe9_bay_ + qe9_qx_ * qe9_baz_);
+  MAT(qe9_J_, 4, 3) =
+      -2 * (qe9_qw_ * qe9_bax_ - qe9_qz_ * qe9_bay_ + qe9_qy_ * qe9_baz_);
+  MAT(qe9_J_, 5, 3) =
+      -2 * (qe9_qx_ * qe9_bax_ + qe9_qy_ * qe9_bay_ + qe9_qz_ * qe9_baz_);
   // PD = J^T*J
   for (int i = 0; i < NUM_QT; i++) {
     for (int j = 0; j < NUM_QT; j++) {
@@ -173,44 +191,55 @@ void qe9_PD_invert(void) {
     // B = inv(A) + w^T*v
     for (int j = 0; j <= i; j++) {
       for (int k = j; k <= i; k++) {
-        SYM(qe9_PD_, j, k) = SYM(qe9_PD_, j, k) + MAT(qe9_tmp_, j, 0) * SYM(qe9_PD_, k, i + 1);
+        SYM(qe9_PD_, j, k) =
+            SYM(qe9_PD_, j, k) + MAT(qe9_tmp_, j, 0) * SYM(qe9_PD_, k, i + 1);
       }
     }
   }
   return;
 }
 
-void get_error(void) {
-  FTYPE R11 = pow(qe9_qw_, 2) + pow(qe9_qx_, 2) - pow(qe9_qy_, 2) - pow(qe9_qz_, 2);
+void qe9_get_error(void) {
+  FTYPE R11 =
+      pow(qe9_qw_, 2) + pow(qe9_qx_, 2) - pow(qe9_qy_, 2) - pow(qe9_qz_, 2);
   FTYPE R12 = 2 * (qe9_qx_ * qe9_qy_ - qe9_qw_ * qe9_qz_);
   FTYPE R13 = 2 * (qe9_qx_ * qe9_qz_ + qe9_qw_ * qe9_qy_);
   FTYPE R21 = 2 * (qe9_qx_ * qe9_qy_ + qe9_qw_ * qe9_qz_);
-  FTYPE R22 = pow(qe9_qw_, 2) + pow(qe9_qy_, 2) - pow(qe9_qx_, 2) - pow(qe9_qz_, 2);
+  FTYPE R22 =
+      pow(qe9_qw_, 2) + pow(qe9_qy_, 2) - pow(qe9_qx_, 2) - pow(qe9_qz_, 2);
   FTYPE R23 = 2 * (qe9_qy_ * qe9_qz_ - qe9_qw_ * qe9_qx_);
   FTYPE R31 = 2 * (qe9_qx_ * qe9_qz_ - qe9_qw_ * qe9_qy_);
   FTYPE R32 = 2 * (qe9_qy_ * qe9_qz_ + qe9_qw_ * qe9_qx_);
-  FTYPE R33 = pow(qe9_qw_, 2) + pow(qe9_qz_, 2) - pow(qe9_qy_, 2) - pow(qe9_qx_, 2);
+  FTYPE R33 =
+      pow(qe9_qw_, 2) + pow(qe9_qz_, 2) - pow(qe9_qy_, 2) - pow(qe9_qx_, 2);
 
-  MAT(qe9_e_, 0, 0) = qe9_emx_ - R11 * qe9_bmx_ - R12 * qe9_bmy_ - R13 * qe9_bmz_;
-  MAT(qe9_e_, 1, 0) = qe9_emy_ - R21 * qe9_bmx_ - R22 * qe9_bmy_ - R23 * qe9_bmz_;
-  MAT(qe9_e_, 2, 0) = qe9_emz_ - R31 * qe9_bmx_ - R32 * qe9_bmy_ - R33 * qe9_bmz_;
+  MAT(qe9_e_, 0, 0) =
+      qe9_emx_ - R11 * qe9_bmx_ - R12 * qe9_bmy_ - R13 * qe9_bmz_;
+  MAT(qe9_e_, 1, 0) =
+      qe9_emy_ - R21 * qe9_bmx_ - R22 * qe9_bmy_ - R23 * qe9_bmz_;
+  MAT(qe9_e_, 2, 0) =
+      qe9_emz_ - R31 * qe9_bmx_ - R32 * qe9_bmy_ - R33 * qe9_bmz_;
 
-  MAT(qe9_e_, 3, 0) = qe9_eax_ - R11 * qe9_bax_ - R12 * qe9_bay_ - R13 * qe9_baz_;
-  MAT(qe9_e_, 4, 0) = qe9_eay_ - R21 * qe9_bax_ - R22 * qe9_bay_ - R23 * qe9_baz_;
-  MAT(qe9_e_, 5, 0) = qe9_eaz_ - R31 * qe9_bax_ - R32 * qe9_bay_ - R33 * qe9_baz_;
+  MAT(qe9_e_, 3, 0) =
+      qe9_eax_ - R11 * qe9_bax_ - R12 * qe9_bay_ - R13 * qe9_baz_;
+  MAT(qe9_e_, 4, 0) =
+      qe9_eay_ - R21 * qe9_bax_ - R22 * qe9_bay_ - R23 * qe9_baz_;
+  MAT(qe9_e_, 5, 0) =
+      qe9_eaz_ - R31 * qe9_bax_ - R32 * qe9_bay_ - R33 * qe9_baz_;
 }
 
-void quaternion_update(void) {
-  set_J();
+void qe9_quaternion_update(void) {
+  qe9_set_J();
   qe9_PD_invert();
-  get_error();
+  qe9_get_error();
   // get dq = PD*J^T*e
   for (int i = 0; i < NUM_QT; i++) {
     // dq_i
     MAT(qe9_tmp_, i, 0) = 0;
     for (int j = 0; j < NUM_QT; j++) {
       for (int k = 0; k < NUM_RF; k++) {
-        MAT(qe9_tmp_, i, 0) += SYM(qe9_PD_, i, j) * MAT(qe9_J_, k, j) * MAT(qe9_e_, k, 0);
+        MAT(qe9_tmp_, i, 0) +=
+            SYM(qe9_PD_, i, j) * MAT(qe9_J_, k, j) * MAT(qe9_e_, k, 0);
       }
     }
   }
@@ -221,15 +250,17 @@ void quaternion_update(void) {
   qe9_qz_ -= MAT(qe9_tmp_, 3, 0);
 }
 
-void get_qe9_qk(FTYPE *qw, FTYPE *qx, FTYPE *qy, FTYPE *qz) {
+void qe9_get_qk(FTYPE *qw, FTYPE *qx, FTYPE *qy, FTYPE *qz) {
   *qw = qe9_qw_;
   *qx = qe9_qx_;
   *qy = qe9_qy_;
   *qz = qe9_qz_;
 }
 
-void get_qe9_rpy(FTYPE *yaw, FTYPE *pitch, FTYPE *roll) {
-  *yaw = atan2(2 * (qe9_qw_ * qe9_qx_ + qe9_qy_ * qe9_qz_), 1 - 2 * (qe9_qx_ * qe9_qx_ + qe9_qy_ * qe9_qy_));
+void qe9_get_rpy(FTYPE *roll, FTYPE *pitch, FTYPE *yaw) {
+  *roll = atan2(2 * (qe9_qw_ * qe9_qx_ + qe9_qy_ * qe9_qz_),
+                1 - 2 * (qe9_qx_ * qe9_qx_ + qe9_qy_ * qe9_qy_));
   *pitch = asin(2 * (qe9_qw_ * qe9_qy_ - qe9_qz_ * qe9_qx_));
-  *roll = atan2(2 * (qe9_qw_ * qe9_qz_ + qe9_qx_ * qe9_qy_), 1 - 2 * (qe9_qy_ * qe9_qy_ + qe9_qz_ * qe9_qz_));
+  *yaw = atan2(2 * (qe9_qw_ * qe9_qz_ + qe9_qx_ * qe9_qy_),
+               1 - 2 * (qe9_qy_ * qe9_qy_ + qe9_qz_ * qe9_qz_));
 }
