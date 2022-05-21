@@ -12,7 +12,7 @@
 extern "C" {
 #endif
 
-#define DBG_CODE
+// #define DBG_CODE
 
 #ifdef DBG_CODE
 #define PRT_DBG 1
@@ -319,9 +319,9 @@ void ekf7_predict(FTYPE dt, FTYPE wx, FTYPE wy, FTYPE wz) {
   QZ = nqz / norm;
   // Update the covariance
   // P = FPF^T + W
-  //ekf7_covariance_predict(dt);
+  // ekf7_covariance_predict(dt);
   ekf7_covariance_predict_v2(dt);
-  //printSyM(ekf7_covar_);
+  // printSyM(ekf7_covar_);
 }
 
 void ekf7_covariance_predict(FTYPE dt) {
